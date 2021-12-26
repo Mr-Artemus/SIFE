@@ -1,0 +1,4 @@
+.idea/
+.git/
+cmake-*/
+.DS_Store
