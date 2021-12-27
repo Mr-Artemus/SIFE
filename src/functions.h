@@ -4,9 +4,9 @@
     #include <sys/stat.h>
     #include <dirent.h>
     #include <stddef.h>
-    #include <strings.h>
+    #include <string.h>
     #include <unistd.h>
-    #include <printf.h>
+    #include <stdio.h>
 
     extern int verboseFlag;
 
