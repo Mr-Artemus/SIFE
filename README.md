@@ -1,13 +1,13 @@
 <h3 align="center" style="font-size: 250%">S.I.F.E</h3>
 
 <p align="center" style="font-weight: bold">
-	Simple and <span style="text-decoration: line-through;">Inefficient</span> File Eraser
+	Simple and <s>Inefficient</s> File Eraser
 </p>
 
 
 ## About the project
 
-**S.I.F.E.** is a simple tool writen in C to erase files/directories with some methods like **AFSSI-5020** or **HMG IS5 Enhanced**. I built it for educational purpose only, so if you try to delete your \*\*\*\*\* porn from your computer before your **intelligence agency** come at your door and find something, it's not my fault 🙃
+**S.I.F.E.** is a simple tool writen in C to erase files/directories with some methods like **AFSSI-5020** or **HMG IS5 Enhanced**. I built it for educational purpose only, so if you try to delete something from your computer before your **intelligence agency** come at your door and find something, it's not my fault 🙃
 
 
 
