@@ -18,6 +18,7 @@ int keepFilesAfterOverwriting = 0;
 // flag to check if verbose mode need to be activated
 int verboseFlag = 0;
 
+// Array of all available algorithms
 static algorithm methodsList[12] = {
         ALGO_SIMPLE_0_PASS,
         ALGO_SIMPLE_1_PASS,
@@ -33,6 +34,7 @@ static algorithm methodsList[12] = {
         ALGO_BRUCE_SCHNEIER
 };
 
+// Variable to store the selected method to wipe
 static int method;
 
 int main(int argc, char **argv) {
@@ -51,7 +53,7 @@ int main(int argc, char **argv) {
             {"help",    no_argument,        NULL,                   'h'},
             {"method",  required_argument,  NULL,                   'm'},
 
-            {0,0,0,0}
+            {0,0,0,0} // To close the loop
         };
 
         // disable getopt error in console
@@ -76,7 +78,9 @@ int main(int argc, char **argv) {
                 case 'm':
                     // get method from user choice
                     method = atoi(optarg);
+                    // If the option has a value that is between 0 and 12
                     if(optarg && method > 0 && method <= 12) {
+                        // Decrement to correspond to the array key
                         method -= 1;
                     } else {
                         printf("Invalid method argument, please retry the command without any argument to get the list of all methods\n");
@@ -85,8 +89,9 @@ int main(int argc, char **argv) {
                     break;
 
                 case '?':
+                    // If the 'method' option does not has a value
                     if (optopt == 'm') {
-                        // missing argument
+                        // Show all available methods
                         printf("List of all usable methods :\n");
                         printf(" 1 - Simple pass of 0b00000000\n");
                         printf(" 2 - Simple pass of 0b11111111\n");
@@ -129,16 +134,19 @@ int main(int argc, char **argv) {
             numberOfFilesWritable   += foundWritable;
             listCount[i - optind]    = numberOfFilesWritable;
 
+            // If verbose mod, show the discovered files for each asked path
             if(verboseFlag) printf("For argument \"%s\", found %d file%s and %d is not writable\n", argv[i], found, found > 1 ? "s" : "", found - foundWritable);
         }
 
+        // Show the number of files detected
         printf("%zu file%s detected\n", numberOfFiles, numberOfFiles > 1 ? "s" : "");
+        // If there are file that is no writable, show an alert
         if(numberOfFiles > numberOfFilesWritable) {
             printf("But only %zu file%s is writable\n", numberOfFilesWritable, numberOfFilesWritable > 1 ? "s" : "");
             printf(COLOR_RED "Please make sure that all files are writable, otherwise the program will not be effective !\n" COLOR_RESET);
 
             if(verboseFlag) {
-                // get all non-writable files
+                // show all non-writable files
                 char a[numberOfFiles - numberOfFilesWritable][MAX_PATH_LENGTH];
                 getAllRegularFilesInDirectory(argv[optind], a, 0, 2, 1);
                 for (int i = 0; i < numberOfFiles - numberOfFilesWritable; i++) {
@@ -150,8 +158,9 @@ int main(int argc, char **argv) {
         }
 
 
-
+        // Now, we'll get all paths
         size_t it = 0;
+        // Create an array of strings that contain the number of files discovered
         char paths[numberOfFilesWritable][MAX_PATH_LENGTH];
         // for each argument
         for(int i = optind; i < argc; i++) {
@@ -164,6 +173,7 @@ int main(int argc, char **argv) {
                 }
             }
 
+            // Increment the iterator
             it += listCount[i - optind];
         }
 

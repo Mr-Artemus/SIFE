@@ -14,7 +14,7 @@
     #include "functions.h"
 
 
-// function's pointer type
+    // function's pointer type
     typedef unsigned char   (*func_w)(void);
     typedef int             (*func_c)(unsigned char);
 
@@ -30,7 +30,7 @@
     int _check1     (unsigned char byte); // NOLINT(bugprone-reserved-identifier)
     int _check01    (unsigned char byte); // NOLINT(bugprone-reserved-identifier)
 
-    // algorithms
+    // algorithms structure
     typedef struct {
         char name[50];
         int size;
@@ -38,6 +38,7 @@
         func_c checks[16];
     } algorithm;
 
+    // Define all algorithms
     #define ALGO_SIMPLE_0_PASS              ((algorithm) { "Simple pass of 0b00000000",  1, { &_write0 }, { &_check0 } })
     #define ALGO_SIMPLE_1_PASS              ((algorithm) { "Simple pass of 0b11111111",  1, { &_write1 }, { &_check1 } })
     #define ALGO_SIMPLE_01_PASS             ((algorithm) { "Simple pass of 0b01010101",  1, { &_write01 }, { &_check01 } })

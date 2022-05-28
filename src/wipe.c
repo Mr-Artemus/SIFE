@@ -14,20 +14,22 @@ int _check01    (unsigned char byte) { return byte == 0b01010101; }
 
 // wipe method
 void wipeFiles(char paths[][MAX_PATH_LENGTH], size_t pathsLength, algorithm algorithm) {
-    if(verboseFlag || 1) printf("Starting the wiping sequence of %zu file%s with method : %s\n", pathsLength, pathsLength > 1 ? "s" : "", algorithm.name);
+    printf("Starting the wiping sequence of %zu file%s with method : %s\n", pathsLength, pathsLength > 1 ? "s" : "", algorithm.name);
     // for each path
     for (size_t i = 0; i < pathsLength; i++) {
         // check if is writable again by security
         if(access(paths[i], W_OK) == 0) {
             if(verboseFlag) printf(CLEAR_LINE "Opening file \"%s\"\n", paths[i]);
+            // Open file stream (r+b ==> read + write at the top of the file in binary)
             FILE *fp = fopen(paths[i], "r+b");
             if(fp == NULL) {
+                // If an error as occurred while opening the file
                 if(verboseFlag) printf(CLEAR_LINE COLOR_RED "Cannot open file \"%s\"" COLOR_RESET, paths[i]);
             } else {
                 // get file size
                 fseek(fp, 0, SEEK_END);
                 unsigned long int fileSize = ftell(fp);
-                unsigned long int fileSizeDouble = fileSize * 2;
+                unsigned long int fileSizeDouble = fileSize * 2; // The double will be in use for the verification sequence
 
                 if(verboseFlag) printf(CLEAR_LINE "File size: %zu bytes\n", fileSize);
 
@@ -48,15 +50,18 @@ void wipeFiles(char paths[][MAX_PATH_LENGTH], size_t pathsLength, algorithm algo
 
                     // for each byte of the file
                     for(offsetCounter = 1; offsetCounter <= fileSizeDouble; offsetCounter++) {
+                        // Calculate the percentage of advancement and convert it to int instead of float
                         percent = (int) roundf(((((float) offsetCounter / (float) fileSizeDouble) * ((float) passCounter + 1))/(float) algorithm.size) * 100.0f);
 
+                        // If the percentage is higher that the previous one
                         if(percent > lastPercent) {
                             lastPercent = percent;
                             printf(CLEAR_LINE "[file %zu/%zu] [%3d%%] Wiping file: Pass %d of %d", i + 1, pathsLength, percent, passCounter + 1, algorithm.size);
                             fflush(stdout);
                         }
 
-                        if(offsetCounter <= fileSize) {
+
+                        if(offsetCounter <= fileSize) { // If it's under the half of the iterator (writing part)
                             // write a byte to the file and move cursor to the next one
                             fprintf(fp, "%c", algorithm.writes[passCounter]());
 
@@ -67,7 +72,7 @@ void wipeFiles(char paths[][MAX_PATH_LENGTH], size_t pathsLength, algorithm algo
 
                                 if(verboseFlag) printf(CLEAR_LINE "End of writing for this pass, now place for verification\n");
                             }
-                        } else {
+                        } else { // If it's after the half of the iterator (verification part)
                             fread(&byte, 1, 1, fp);
                             if(algorithm.checks[passCounter](byte) != 1 && errorOnWriteMethod == 0) {
                                 errorOnWriteMethod = 1;
@@ -83,13 +88,16 @@ void wipeFiles(char paths[][MAX_PATH_LENGTH], size_t pathsLength, algorithm algo
 
                 if(verboseFlag) printf("End for this file\n");
 
+                // Close the file stream
                 if(fclose(fp) == 0) {
                     if(verboseFlag) printf("Successfully close the stream\n");
                 } else {
                     if(verboseFlag) printf("Cannot close the stream\n");
                 }
 
+                // If the `--keep` parameter as not been passed
                 if(keepFilesAfterOverwriting == 0) {
+                    // Try to remove the file
                     if(remove(paths[i]) == 0) {
                         if(verboseFlag) printf("Successfully delete the file from your system\n");
                     } else {
@@ -103,8 +111,9 @@ void wipeFiles(char paths[][MAX_PATH_LENGTH], size_t pathsLength, algorithm algo
     }
 }
 
+// A function that is passed to `nftw`to remove all files in a directory then delete the directory
 int wipeDir(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf) {
-    if(S_ISREG(sb->st_mode) && access(fpath, W_OK) == 0) {
+    if(S_ISREG(sb->st_mode) && access(fpath, W_OK) == 0) { // If it's a writable regular file
         if(verboseFlag) printf("Found a writable file : %s\n", fpath);
 
         if(remove(fpath) == 0) {
@@ -112,7 +121,7 @@ int wipeDir(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftw
         } else {
             if(verboseFlag) printf("Cannot delete it\n");
         }
-    } else if(S_ISDIR(sb->st_mode)) {
+    } else if(S_ISDIR(sb->st_mode)) { // If it's a directory
         if(verboseFlag) printf("Found a directory : %s\n", fpath);
 
         if(rmdir(fpath) == 0) {
@@ -120,7 +129,7 @@ int wipeDir(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftw
         } else {
             if(verboseFlag) printf("Cannot delete it. It may not be empty\n");
         }
-    } else if(S_ISLNK(sb->st_mode)) {
+    } else if(S_ISLNK(sb->st_mode)) { // If it's a symbolic link
         if(verboseFlag) printf("Found a symbolic link : %s\n", fpath);
 
         if(unlink(fpath) == 0) {
