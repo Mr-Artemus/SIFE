@@ -105,7 +105,9 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
     }
 
     // For each file
-    for file in files {
+    let totalFiles: u64 = files.len() as u64;
+    for (index, file) in files.iter().enumerate() {
+        let index: u64 = (index + 1) as u64;
         if crate::utils::isRegularFile(file.clone()) {
             if crate::utils::isWritable(file.clone()) {
                 print!("Opening {} ...", file);
@@ -124,7 +126,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                     let mut checkError: bool = false;
 
                     // Print the percent
-                    print!("{}[  0.00%] - {}", CLEAR_LINE, file);
+                    print!("{}[file {}/{}][  0.00%] - {}", CLEAR_LINE, index, totalFiles, file);
                     stdout().flush().ok();
 
                     // For each write function
@@ -141,7 +143,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                             // Print the percent
                             if newPercent != percent {
                                 percent = newPercent;
-                                print!("{}[{: >6.2}%] - {}", CLEAR_LINE, percent, file);
+                                print!("{}[file {}/{}][{: >6.2}%] - {}", CLEAR_LINE, index, totalFiles, percent, file);
                                 stdout().flush().ok();
                             }
 
@@ -179,7 +181,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                             // Print the percent
                             if newPercent != percent {
                                 percent = newPercent;
-                                print!("{}[{: >6.2}%] - {}", CLEAR_LINE, percent, file);
+                                print!("{}[file {}/{}][{: >6.2}%] - {}", CLEAR_LINE, index, totalFiles, percent, file);
                                 stdout().flush().ok();
                             }
 
@@ -206,7 +208,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                         }
 
                         // Print the percent
-                        print!("{}[{}] - {}", CLEAR_LINE, if checkError { " ERROR " } else { "100.00%" }, file);
+                        print!("{}[file {}/{}][{}] - {}", CLEAR_LINE, index, totalFiles, if checkError { " ERROR " } else { "100.00%" }, file);
                         stdout().flush().ok();
                     }
 
