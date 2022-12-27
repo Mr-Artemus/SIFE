@@ -128,14 +128,15 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                     stdout().flush().ok();
 
                     // For each write function
-                    for i in 0..algorithm.writes.len() {
+                    for i in 0..algorithm.writes.len() as u64 {
                         // Reset offset
                         offset = 0;
 
                         // For each byte write
-                        for _ in 0..fileSize {
+                        for ii in 0..fileSize {
                             // Calculate the percent
-                            let newPercent: f32 = f32::trunc(((offset as f32 / fileSize as f32) * 50.00)  * 100.0) / 100.0;
+                            let mut newPercent: f32 = 100.0 * (((i * fileSize * 2) + ii) as f32) / (algorithm.writes.len() as u64 * fileSize * 2) as f32;
+                            newPercent = f32::trunc(newPercent  * 100.0) / 100.0;
 
                             // Print the percent
                             if newPercent != percent {
@@ -145,7 +146,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                             }
 
                             // Write the byte
-                            let writeResult: Result<(), Error> = fp.write_u8_at(offset, algorithm.writes[i]());
+                            let writeResult: Result<(), Error> = fp.write_u8_at(offset, algorithm.writes[i as usize]());
                             if writeResult.is_err() {
                                 writeError = true;
                                 println!("{}An error as occured while writing {} :", CLEAR_LINE, file);
@@ -158,21 +159,22 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                         }
 
                         // Print the percent
-                        print!("{}[{}] - {}", CLEAR_LINE, if checkError { " ERROR " } else { " 50.00%" }, file);
-                        stdout().flush().ok();
+                        //print!("{}[{}] - {}", CLEAR_LINE, if checkError { " ERROR " } else { " 50.00%" }, file);
+                        //stdout().flush().ok();
 
                         // Reset offset
                         offset = 0;
 
                         // For each byte check
-                        for _ in 0..fileSize {
+                        for ii in 0..fileSize {
                             // If an error has occured while writting skip
                             if writeError {
                                 break;
                             }
 
                             // Calculate the percent
-                            let newPercent: f32 = f32::trunc((50.00_f32 + ((offset as f32 / fileSize as f32) * 50.00))  * 100.0) / 100.0;
+                            let mut newPercent: f32 = 100.0 * (((i * fileSize * 2) + ii) as f32 + fileSize as f32) / (algorithm.writes.len() as u64 * fileSize * 2) as f32;
+                            newPercent = f32::trunc(newPercent  * 100.0) / 100.0;
 
                             // Print the percent
                             if newPercent != percent {
@@ -191,7 +193,7 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                                 println!("\t{}", readResult.err().unwrap());
                                 break;
                             } else {
-                                if !algorithm.checks[i](readResult.unwrap()) {
+                                if !algorithm.checks[i as usize](readResult.unwrap()) {
                                     checkError = true;
                                     println!("{}An error as occured while checking {} :", CLEAR_LINE, file);
                                     println!("\tThe byte at offset {} is not the expected one", offset);
@@ -206,22 +208,23 @@ pub fn wipeFiles(files: Vec<String>, algorithmNbr: u16, keep: bool, verbose: boo
                         // Print the percent
                         print!("{}[{}] - {}", CLEAR_LINE, if checkError { " ERROR " } else { "100.00%" }, file);
                         stdout().flush().ok();
-
-                        // Delete the file if keep is false
-                        if !keep {
-                            if verbose {
-                                print!("\nDeleting {} ...", file);
-                            }
-                            let deleteResult: Result<(), Error> = remove_file(file.clone());
-                            if deleteResult.is_err() {
-                                println!("\nAn error as occured while deleting {} :", file);
-                                println!("\t{}", deleteResult.err().unwrap());
-                            }
-                        }
-
-                        println!("");
-                        stdout().flush().ok();
                     }
+
+                    // Delete the file if keep is false
+                    if !keep {
+                        if verbose {
+                            print!("\nDeleting {} ...", file);
+                        }
+                        let deleteResult: Result<(), Error> = remove_file(file.clone());
+                        if deleteResult.is_err() {
+                            println!("\nAn error as occured while deleting {} :", file);
+                            println!("\t{}", deleteResult.err().unwrap());
+                        }
+                    }
+
+                    println!("");
+                    stdout().flush().ok();
+
                 } else {
                     println!("{} is not readable, skipping...", file);
                 }
