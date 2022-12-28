@@ -2,9 +2,11 @@
 
 use clap::{Parser};
 use std::process::exit; 
+use crate::algorithms::ALGORITHMS;
 
 mod utils;
 mod wipe;
+mod algorithms;
 
 // Generate the command line arguments
 #[derive(Parser)]
@@ -53,8 +55,8 @@ fn main() {
 
     if args.list {
         println!("Available methods :");
-        for i in 0..wipe::ALGORITHMS.len() {
-            println!("  {} - {}", (i + 1), wipe::ALGORITHMS[i].name);
+        for i in 0..ALGORITHMS.len() {
+            println!("  {} - {}", (i + 1), ALGORITHMS[i].name);
         }
         println!("\nPlease use the --method option to select a algorimthm")
 
